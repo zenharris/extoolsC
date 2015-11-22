@@ -1,0 +1,1199 @@
+.ff 1
+.tc 75 1 5 1 7 2
+.df .ce Page .pa
+.dh .ce .u1 Knowledge of Many Things EXTOOLS Library Functions. .u0
+.te 1 .ceDOS FUNCTIONS AND FILE HANDLING
+
+.te 2 EXCLSFIL Close a file handle
+
+        This functions closes a previously opened file handle.
+
+        werror = exclsfil(whandle);
+
+        int werror              -1 if an error occurred,
+                                 0 if everything went according to plan.
+
+        int whandle             The opened file handle.
+
+
+.te 2 EXFNDFST Find first matching file
+
+        This function finds the first matching file given a file
+        specification i.e. *.c
+
+        werror = exfndfst(wmask,wattr,&wdta);
+
+        int werror      returns 0 if a match was found, otherwise there
+                        are no files matching the mask specification.
+
+        char *wmask     File specification i.e. "*.TXT"
+
+        int wattr       Attribute to search for.
+                        1 : Read Only
+                        2 : Hidden
+                        4 : System
+                        8 : Volume Label
+                       16 : Sub-Directory
+                       32 : Archive
+                       These may be "OR"ed together to get combinations.
+                       Use 0 for normal files, 0xFF for ALL files
+
+        TDIR wdta;     Structure defined in EXTOOLS.H which defines the
+                       disk transfer address buffer, with various directory
+                       fields.
+
+.te 2 EXFNDNXT Find next matching file
+
+        Find the next matching file after initially calling exfndfst.
+
+        werror = exfndnxt(&wdta);
+
+        int werror      returns 0 if a match was found, otherwise ther
+                        are no more files matching the mask specification.
+
+        TDIR wdta       Structure defined in EXTOOLS.H which defines the
+                        disk transfer address buffer, with various directory
+                        fields.
+
+
+        EX.
+          #include <extools.h>
+
+          int werror;           /* return error code */
+          TDIR wdta;            /* disk directory buffer */
+
+          werror = exfndfst("*.*",0,&wdta);   /* list all files in directory */
+
+          while (werror == 0) {
+            printf("\n%s",wdir.name);
+            werror = exfndnxt(&wdta);
+          }
+
+
+.te 2 EXGETDR Return the current working directory.
+
+        Return the working sub-directory as a string.The string will
+        not have a "\" char after it so if you want to use this for
+        searches, you must concatenate a "\" to it, especially if you
+        are in the root dir as it may return "".
+
+        exgetdr(wdir);
+
+        char *wdir      Current working sub-directory string on return
+
+.te 2 EXGETDRV Get logged drive
+
+        Return the current logged drive.
+
+        wdrive = exgetdrv();
+
+        int wdrive      0 : Drive A
+                        1 : Drive B
+                        2 : Drive C
+                        etc..
+
+
+.te 2 EXGETVOL Get the volume label of a drive
+
+        Get the volume label for the specified drive;
+
+        wptr = exgetvol(wdrive,wvolume);
+
+        char *wptr      Pointer to wvolume argument for using in
+                        expressions. Null pointer if error occured.
+
+        wdrive          0 : Drive A
+                        1 : Drive B
+                        2 : Drive C
+                        etc.
+
+        char
+        *wvolume        String for volume label. Make sure to allocate
+                        at least 13 chars for this string.
+
+
+.te 2 EXOPNFIL Open a file handle
+
+        Open a file handle for read/write access
+
+        werror = exopnfil(wname,wmode);
+
+        int werror      -1 if an error occurred,
+                         otherwise a valid dos file handle
+
+        char *wname     File name to open
+
+        int wmode       0 : read only
+                        1 : write only
+                        2 : read/write
+                        et. al.
+
+.te 2 EXREDFIL Read from a file handle.
+
+        Read data from a file handle into a buffer. This is a fairly
+        high speed disk access method, very useful for copying files and
+        such.
+
+        wnum = exredfil(whandle,wbuf,wamt);
+
+        unsigned
+        int wnum        Actual number of bytes read from the file. A value
+                        of < wamt (or 0) means end of file.
+
+        int whandle     The handle of the previously opened file from a call
+                        to exopnfil/excrtfil
+
+        char *wbuf      Buffer to read the data into. Usually an array or
+                        pointer to char.
+
+        unsigned
+        int wamt        The number of bytes requested to read.
+
+.te 2 EXSEKFIL Seek into a file.
+
+        Seek to a position into a file. (Random Access). There are 3
+        methods of seeking:
+        0 : Seek relative to beginning of file.
+        1 : Seek relative to Current file position
+        2 : Seek relative to End of File
+
+        Note that negative offsets are not allowed !.
+
+        wpos = exsekfil(whandle,woffset,wmethod);
+
+        long wpos       Position of the file pointer in bytes relative
+                        to the beginning of the file.
+
+        int whandle     The handle of the previously opened file from a call
+                        to exopnfil/excrtfil
+
+        unsigned int
+        woffset         Offset of bytes to seek from one of the
+                        methods specified in wmethod.
+
+        int wmethod     0 : Seek relative to beginning of file.
+                        1 : Seek relative to Current file position
+                        2 : Seek relative to End of File
+
+
+        EX.
+
+          /* how to seek to the end of the file minus one */
+          /* difficult 'cuz negative offsets not allowed  */
+
+          int whandle;
+          long fsize,exsekfil();
+
+          . . . . .
+
+          /* assume file was already opened at this point */
+
+          fsize = exsekfil(whandle,0L,2);           /* seek to end of file */
+          if (fsize) {
+            fsize --;                               /* subtract 1 from size */
+            exsekfil(whandle,fsize,0);              /* seek to eof - 1 */
+          }
+
+
+.te 2 EXWRTFIL Write data to a file handle.
+
+        Write data from a buffer to a file handle. Like exredfil, this
+        routine is useful for high speed data transfer.
+
+        wnum = exwrtfil(whandle,wbuf,wamt);
+
+        unsigned
+        int wnum        Actual number of bytes written to the file.
+
+        int whandle     The handle of the previously opened file from a call
+                        to exopnfil/excrtfil
+
+        char *wbuf      Buffer to write the data from. Usually an array or
+                        pointer to char.
+
+        unsigned
+        int wamt        The number of bytes requested to write.
+
+.pb
+
+.te 1 .ce STRING HANDLING
+
+.te 2  INDEX Return the index of a character in a string.
+
+        Return the index position of the occurance of a character
+        in a substring or -1 if the character was not found.
+
+        wpos = index(wsource,wch);
+
+        int wpos        index of occurance of character wch in the string
+                        wsource. Returns -1 if no occurance.
+
+        char *wsource   Pointer to the source string to search.
+
+        int wch         Character to do the search for.
+
+.te 2 EXCHRSTR Concatenate a character onto a string
+
+        This function performs the task of appending a single char
+        to a string (which strcat will not do). It appends a null
+        terminating character to the end of the source string to
+        maintain string compatibility.
+
+        exchrstr(wsource,wch);
+
+        char *wsource   Source string to concatenate character to
+
+        int wch         Character to concatenate to wsource.
+
+.te 2 EXCNTSTR Return a centered string.
+
+        This function returns a string padded with blanks to be
+        centered in a give field width. Note that the maximum limit
+        on string size for this routine is 255. The routine itself
+        does NO range checking so it is up to the application itself
+        to insure that this does not happen. This routine uses a static
+        buffer for the pointer to return so subsequent calls to the routine
+        destroy the previous contents of the returned pointer!
+
+        wptr = excntstr(wsource,wnum);
+
+        char *wptr      pointer to centered string.
+
+        char *wsource   String to have centered.
+
+        wnum            Width of field to center on.
+
+.te 2 EXDLTSTR Delete a substring from another string.
+
+        Give a starting and ending position, this routine will remove
+        a portion of a string.
+
+        wnum = exdltstr(wsource,wfrom,fto);
+
+        int wnum        Number of chars actually deleted.
+
+        char *wsource   String to delete chars from.
+
+        int wfrom       Starting index to delete from
+
+        int wto         Ending index to delete to
+
+.te 2 EXGETPCE Get delimited piece of substring
+
+        This routine returns the "n"th piece of a delimited string.
+        i.e. Jaz;10318 Broom Lane;Seabrook;Md;20706
+        the 3rd ";" piece of the string is "Seabrook"
+
+        wptr = exgetpce(wsource,wdestin,wdel,wnum);
+
+        char *wptr      Pointer to wdestin, the destination piece.
+
+        char *wsource   The source string with delimiters
+
+        char *wdestin   The destination string.
+
+        int wdel        The character used as a delimiter
+
+        int wnum        Which piece do you want?
+
+.te 2 EXINSSTR Insert a string into another string.
+
+        This routine does a string insert of one string into another at
+        a given starting position. Note that if wstart is > than the
+        length of the source string, blanks will be appended.
+
+        exinsstr(wdestin,wsource,wstart);
+
+        char *wdestin   Pointer to destination string (to be inserted).
+
+        char *wsource   Pointer to string to insert
+
+        int wstart      Index of position to start inserting.
+
+.te 2 EXLFTSTR Return the left n chars from a string
+
+        This routine returns the left n chars of a given string.
+        note that this routine uses a static 255 byte buffer for the pointer to
+        return so subsequent calls to the routine destroy the
+        previous contents of the returned pointer!
+
+        wptr = exlftstr(wstr,wnum);
+
+        char *wptr      Pointer to static buffer containing the left string.
+
+        char *wstr      Source string
+
+        int wnum        The number of chars you want from the source string.
+
+.te 2 EXPAD Pad a string
+
+        This routine pads a given string with a given char.
+        Note that this routine uses a static 255 byte buffer for the pointer to
+        return so subsequent calls to the routine destroy the
+        previous contents of the returned pointer!
+
+        wptr = expad(wstr,wch);
+
+        char *wptr      Pointer to static buffer containing padded string.
+
+        char *wstr      Source string to pad.
+
+        int wch         Character to pad with.
+
+
+.te 2 EXRGTJST Right justify a string
+
+        This routine right justifies a given string. Effectively padding to
+        the right.
+        Note that this routine uses a static 255 byte buffer for the pointer to
+        return so subsequent calls to the routine destroy the
+        previous contents of the returned pointer!
+
+        wptr = exrgtjst(wstr,wnum);
+
+        char *wptr      Pointer to static buffer containing padded string.
+
+        char *wstr      Source string to pad.
+
+        int wch         Character to pad with.
+
+.te 2 EXRGTSTR Return the right n chars of a string
+
+        This routine returns the rightmost n chars of a given string.
+        Note that this routine uses a static 255 byte buffer for the pointer to
+        return so subsequent calls to the routine destroy the
+        previous contents of the returned pointer!
+
+        wptr = exrgtstr(wstr,wnum);
+
+        char *wptr      Pointer to static buffer containing the left string.
+
+        char *wstr      Source string
+
+        int wnum        The number of chars you want from the source string.
+
+.pb
+.te 1 .ce UTILITY ROUTINES
+
+.te 2 GETCRC Get a crc code for a buffer
+
+        This routine returns a Cyclic Redundancy Check code for a given
+        buffer.
+
+        wcrc = getcrc(wbuf,wlen);
+
+        unsigned int
+        wcrc            Crc Code returned from function.
+
+        char *wbuf      Pointer to data buffer to check.
+
+        int wlen        sizeof (wbuf)
+
+.te 2 EXDELAY Delay program execution
+
+        Delay the current program for the specified number of clock
+        tics.
+
+        exdelay(wtics);
+
+        long wtics      Number of tics to delay. There are about 18
+                        clock tics in a second. Make sure you use a
+                        long value here or the high word may cause
+                        you to "hang" for a long time. (No Pun Intended)
+
+
+.pb
+.te 1 .ce VIDEO/SCREEN/WINDOWING ROUTINES
+
+.te 2 INIT_WINDOWS Initialize Window Structures
+
+	This function initializes the window structures. It creates the
+	primary window, borderless and taking up the whole screen.
+	This function must be called before any screen writes.
+
+	void init_windows(void)
+
+
+.te 2 OPEN_WINDOW Create window on screen
+
+	This function Creates a window on the screen, surrounds it with
+	a double-lined box and makes it the current window. The area
+	under the window is saved and restored on close_window(). The
+	coordinates are ABSOLUTE and the origin is 0,0. The dimensions
+	include the border if border type window is specified.
+		The Dimensions of the Current window are accessible via
+	the global pointer variable crnt_window defined in EXTOOLS.H.
+		This function also sets the TURBOC window, so the TURBOC
+	console read/write (cprintf etc) functions shall also work fine.
+
+
+	struct crnt_wind_rec {
+      	   int cul,rul,clr,rlr,attr;  Dimensions of text area in window
+           void *svscr;		      Pointer to saved area of screen
+    	   int width,lnth;            Width & Length of text area in win
+	   struct crnt_wind_rec *last;Pointer to previous current window
+	   enum win_type type;        Type of window (border,borderless)
+	};
+
+	extern struct crnt_wind_rec *crnt_window;
+
+
+        void *open_window(row,col,width,lnth,attr,type)
+
+	int row		Row upper left of window
+
+	int col    	Col upper left of window
+
+	int width	Width of window
+
+	int lnth	Length of window
+
+	int attr	Attribute to use for window
+
+	enum win_type	Type of window (border,borderless)
+
+	Function returns pointer to the window structure created.
+
+
+.te 2 CLOSE_WINDOW Closes current window
+
+	This function closes the current window and restores the saved
+	screen contents that were under the window when created.
+
+	void close_window(void)
+
+
+.te 2 CLS Clear the display screen
+
+        This function clears the display screen. This function does not
+	home the cursor. Only the Current window will be cleared and it
+	will be set to the attribute specified when the window was
+	created.
+
+        void cls(void);
+
+
+.te 2 EXCLREOL Clear to the end of the line
+
+        This routine clears the line from the given position to the
+        end of the line or the extent of the window. Row and Column
+	coordinates are relative to the current window . The line is
+	cleared with the attribute specified when the window was created
+
+
+        void exclreol(wrow,wcol);
+
+        int wrow        Row position to clear from
+
+        int wcol        Column position to clear from
+
+
+.te 2 EXDRWBOX Draw a box to the display screen.
+
+	This function will draw a double-lined box around the region
+	specified. The coordinates are ABSOLUTE .
+
+        exdrwbox(wrow,wcol,wlen,wwidth,wattr);
+
+        int wrow        Starting row position of upper left corner of box
+
+        int wcol        Starting column position of upper left corner of box
+
+        int wlen        Length of horizontal axis
+
+        int wwidth      Width of vertical axis
+
+        int wattr       Color attribute of the window box.
+
+
+.te 2 EXINSTR Edit a string with editing keys.
+
+        This routine provides a formatted editing for a field.
+        It is similar in style to DBASE or WORDSTAR.
+	This function does not conform to Knowledge of Many Things
+	standards. It may be used BUT it will not record keyboard
+	Macros.
+
+        wkey = instr(wstr,wlen,wrow,wcol,wattr,wtime,wkeystr);
+
+        int wkey        This is the key that was pressed to end the input.
+                        It is usually the return key, but if you have
+                        activated other keys using wkeystr, it would be
+                        the scan code of an active key.
+
+        int wlen        Max length of the field.
+
+        int wrow        Starting row of field edit.
+
+        int wcol        Starting col of field edit.
+
+        int wattr       Color attribute of edit field.
+
+        long wtime      Maximum amount of time with no keys
+                        being pressed. Edit will time out after
+                        wtime worth of inactivity and a return
+                        key is returned.
+
+        char *wkeystr   String of scan codes to terminate the read on.
+                        i.e. If you want to activate the F1 key which
+                        would be "\x3B"
+
+        EX.
+
+        #define cESC "\001"
+        #define ESCSCAN 1               /* scan code for escape code */
+        main()
+        {
+          int w = 1,wch;
+          char name[31],street[31],city[16],state[3],zip[6],phone[13];
+
+          name[0] = 0;
+          street[0] = 0;
+          city[0] = 0;
+          state[0] = 0;
+          zip[0] = 0;
+          phone[0] = 0;
+
+          do {
+            switch(w) {
+              case 1 : wch = exinstr(name,30,5,8,(CYAN << 4) + BLUE,60L,cESC);
+                       break;
+              case 2 : wch = exinstr(street,30,6,8,(CYAN << 4) +
+		       BLUE,60L,cESC); break; case 3 : wch =
+	      exinstr(city,15,7,8,(CYAN << 4) + BLUE,60L,cESC); break;
+              case 4 : wch = exinstr(state,2,8,8,(CYAN << 4) +
+		       BLUE,60L,cESC); break; case 5 : wch =
+	      exinstr(zip,5,9,8,(CYAN << 4) + BLUE,60L,cESC); break;
+              case 6 : wch = exinstr(phone,12,10,8,(CYAN << 4) +
+		       BLUE,60L,cESC); break; }
+
+            switch (wch) {
+              case CTRL_X :
+              case CTRL_M : w = min(LAST,w+1);
+                            break;
+              case CTRL_E : w = max(FIRST,w-1);
+                            break;
+              case PGDN   : w = LAST;
+                            break;
+              case PGUP   : w = FIRST;
+                            break;
+              case ESCSCAN: return;
+            }
+          } while (-1);
+        }
+
+
+.te 2 LINEDT Edit and enter string
+
+	This function provides cursor editing of strings. It has
+	parameters to set the current position, the editing mode and it
+	also accepts a command line structure for function key control.
+	The coordinates are relative to the current window and the
+	origin is 0,0.
+
+	int linedt(edtstr,row,col,lnth,attr,pos,control,cmndline)
+
+	char *edtstr	Pointer to edit string
+
+	int col	      	Starting col of field to edit
+
+	int row		Starting row of field to edit
+
+	int lnth        Maximum length of field (Maximum 80)
+
+	int attr	Colour attribute of edit field
+
+	int *pos        Current cursor pos. Must be set from 0 to lnth
+			before edit. Is updated by linedt.
+
+	unsigned int *control    Combination of linedt control constants
+			as defined in EXTOOLS.H
+
+	struct cmndline_params cmndline[]    Command Line Definition
+			structure as defined in EXTOOLS.H (Use NULL for
+			blank command line.
+
+
+	These control constants for linedt (as defined in EXTOOLS.H) can
+	be used in any combination that makes sense.
+
+	        SUPRESS_DELETE  Delete operations not allowed
+	        INSERT_MODE     Start linedt in insert mode
+	        WORD_WRAP 	Start linedt in word wrap mode
+	        CAPITALIZE 	Capitalize first letter in all words
+	        TYPE_OVER 	Start linedt in overtype mode
+
+	These control constants must used exclusively.
+
+	        INIT_ONLY 	Display field only, and exit. For Texaco
+	        ALLOCATE        Allocate Sufficient memory to store
+				field and exit. (For Texaco) Returns
+				pointer to allocated block through
+				edtstr eg.
+
+			char *block;   /* Pointer for field */
+			int control = ALLOCATE;
+			linedt(&block,0,0,0,0,0,&control);
+
+	 	COMP_LOAD	Load the internal comparison buffer
+				(from edtstr) and exit. (For Texaco)
+		COMP_CHECK      Check edtstr against comparison buffer
+				and exit. (For Texaco) eg.
+
+			char field[81];
+			int edited = FALSE, control = COMP_CHECK;
+			edited = linedt(field,0,0,0,0,0,&control);
+
+
+
+.te 2 EXLOCCUR Position the cursor
+
+        This function positions the cursor on the display screen.
+	The coordinates are relative to the current window and the
+	origin is 0,0.
+
+        exloccur(wrow,wcol);
+
+        int wrow        Row position to set cursor to . 0..24
+
+        int wcol        Column position to set cursor to . 0..79
+
+
+.te 2 EXREDCHR Read a char and attribute from screen
+
+        This function reads a character and attribute from the current
+        cursor position
+
+        exredchr(&wch,&wattr);
+
+        int wch         Pointer to the returned character.
+
+        int wattr       Pointer to the returned attribute
+
+.te 2 EXREDSCR Read a string from the screen.
+
+        This function returns a string from a given screen position. It
+        does not return attributes. The coordinates are ABSOLUTE and the
+	origin is 0,0.
+
+        exredscr(wstr,wrow,wcol,wlen);
+
+        char *wstr      Pointer to the string to be returned.
+
+        int wrow        Starting row position to read from screen.
+
+        int wcol        Starting col position to read from screen.
+
+        int wlen        Length of string to read from screen.
+
+.te 2 EXSCRLDN Scroll a window down
+
+        This routine calls bios to scroll a window down on the screen.
+	The coordinates are relative to the current window and the
+	origin is 0,0.
+
+        exscrldn(wyx1,wyx2,wnum,wattr);
+
+        int wyx1        This integer contains the upper left row position
+                        of the window in the high byte and the upper left
+                        column position in the low byte.
+
+        int wyx2        This integer contains the lower right row position
+                        of the window in the high byte and the lower right
+                        column position in the low byte.
+
+        int wnum        Number of lines to scroll. At maximum, this number
+                        should be Y2 - Y1. Specify 0 to scroll the whole
+                        window, effectively clearing it. Specifying :
+                        Y2 - Y1 + 1, which is the actual number of lines
+                        in the window will garble up the screen on an
+                        IBM pc.
+
+.te 2 EXSCRLUP Scroll a window up
+
+        This routine calls bios to scroll a window up on the screen. The
+	coordinates are relative to the current window and the origin is
+	0,0.
+
+        exscrlup(wyx1,wyx2,wnum,wattr);
+
+        int wyx1        This integer contains the upper left row position
+                        of the window in the high byte and the upper left
+                        column position in the low byte.
+
+        int wyx2        This integer contains the lower right row position
+                        of the window in the high byte and the lower right
+                        column position in the low byte.
+
+        int wnum        Number of lines to scroll. At maximum, this number
+                        should be Y2 - Y1. Specify 0 to scroll the whole
+                        window, effectively clearing it. Specifying :
+                        Y2 - Y1 + 1, which is the actual number of lines
+                        in the window will garble up the screen on an
+                        IBM pc.
+
+
+.te 2 EXSCRLUPW Scroll current window up
+
+	This function will scroll the current window up by one line. It
+	is implemented as a macro in EXTOOLS.H.
+
+	void exscrlupw(void);
+
+
+.te 2 EXSCRLDNW Scroll current window down
+
+	This function will scroll the current window down by one line.
+	It is implemented as a macro in EXTOOLS.H.
+
+	void exscrldnw(void);
+
+
+.te 2 EXDELLN delete line from current window
+
+	This function will delete the specified line in the current
+	window and scroll the part of the window below the deleted line
+	up by one line. It is implemented as a macro in EXTOOLS.H.
+
+	void exdelln(line);
+
+	int line 	Line number to delete (origin 0)
+
+
+
+.te 2 EXSCRPRN Print directly to video memory
+
+        This routine allows you to print directly to video memory
+        specifying row,column and color. It also avoids snow on the
+        ibm CGA card. It is a very fast routine, about 10 times faster
+        than printf(). The cordinates are relative to the current window
+	and the origin is 0,0.
+
+        exscrprn(wstr,wrow,wcol,wattr);
+
+        char *wstr      String to print to screen.
+
+        int wrow        Row to print to
+
+        int wcol        Column to print to
+
+        int wattr       Color attribute to use when printing.
+
+.te 2 EXSETCUR Set the cursors size
+
+        This routine allows you to adjust the cursors starting and
+        ending scan lines. The cursor is mapped as follows:
+
+Default Scan         Monochrome                     Color
+
+                1  . . . . . . . .             . . . . . . . .
+                2  . . . . . . . .             . . . . . . . .
+                3  . . . . . . . .             . . . . . . . .
+                4  . . . . . . . .             . . . . . . . .
+                5  . . . . . . . .             . . . . . . . .
+                6  . . . . . . . .             . . . . . . . .
+                7  . . . . . . . .    Start    께께께께께께께�
+                8  . . . . . . . .    End      께께께께께께께�
+                9  . . . . . . . .
+               10  . . . . . . . .
+Start          11  께께께께께께께�
+End            12  께께께께께께께�
+
+
+        exsetcur(wstart,wend);
+
+        int wstart      Starting scan line of cursor
+
+        int wend        Ending scan line of cursor
+
+
+.te 2 EXWRTCHR Write a char to the screen using bios
+
+        This function writes a char to the screen at the current cursor
+	position using bios.
+
+        exwrtchr(wch,wattr,wnum);
+
+        int wch         Character to write
+
+        int wattr       Color attribute of char
+
+        int wnum        Number of copies to write
+
+
+.pb
+.te 1 .ce KEYBOARD ROUTINES
+
+.te 2 EXINKEY Return the char and scan code of a key
+
+        This routine waits until a key is pressed and returns
+        it's character and scan code. The character can be
+        examined and if it is 0, the key was one of the special
+        function keys, cursor keys, alt sequences, or shift sequences.
+	Input comes through the Keyboard Macro Routines so any
+	keystrokes can be recorded and played back.
+
+        wch = exinkey(&wscan);
+
+        int wch         Returned character that was pressed
+
+        int wscan       Scan code of character that was pressed.
+
+.te 2 EXKEYPRS Return 1 if a key is waiting
+
+        This routine determines whether a key was pressed by calling
+        a bios function to see whether a key is in the keyboard buffer.
+
+        wkeypressed = exkeyprs();
+
+        int
+        wkeypressed     Returns 1 if a key is pressed, otherwise 0
+
+.pb
+.te 1 .ce Text and Columnar List Editing
+
+.te 2 TEXACO Enter/edit variable length list
+
+	This function allows variable length list editing in a manner
+	similar to a cursor based text editor. The actual line editor
+	that Texaco uses can be replaced with your own editor so that
+	any data format can be edited. You can construct your own
+	line editor out of a single line INPUT SCREEN definition using
+	any combination of edit types (The replacement line editor must
+	conform to LINEDT standards). Use LINEDT for editing text only
+	variable length lists.
+
+	void texaco (crnt_list,t_line,b_line,retcode,edited,lines_limit,
+		    line_ed,cont,cmndline)
+
+	struct line_rec **crnt_list
+	       			Pointer to List Start Pointer
+	                        (maintained by texaco)
+
+	int t_line		Top line of edit area (Current Window)
+
+	int b_line 		Bottom of edit area (Current Window)
+
+	int *retcode 		Scan Code of exit key
+
+	int *edited             Edited Flag (set if list changed)
+
+	int lines_limit 	Maximum number of lines to edit
+
+	int (*line_ed)()        Replaceable line editor
+
+	unsigned int cont 	Control Constants
+
+	struct cmndline_params cmndline[]
+				Command line definition to be passed to
+				the line editor.
+
+	These Control Constants (as defined in EXTOOLS.H) can be used in
+	any combination that makes sense.
+
+	        SUPRESS_DELETE	Delete operations not allowed
+	        INSERT_MODE     Start Texaco in insert mode
+	        WORD_WRAP       Start Texaco in word wrap mode
+	        CAPITALIZE      Capitalize first letter in all words
+	        TYPE_OVER       Start Texaco in overtype mode (default)
+
+
+.te 2 Example LINEDT specification Line Editor
+
+	This is a an example of a line editor that is compatable with
+	LINEDT and therefore suitable for use with the TEXACO list
+	editor. It uses an INPUT SCREEN definition to set out the format
+	of each edit field in the line. All fields must add up to 80
+	characters or less for it to work successfully.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <extools.h>
+
+	/*    This is the local edit buffer  */
+
+struct phelpsed_type {
+   char job_no[7];
+   unsigned char activ_no;
+   char descript[30];
+   int hours;
+   char work_ctr[7];
+   struct btr_date required;
+   char material[10];
+   struct btr_date complete;
+   int sent,rcvd;
+   unsigned long id_field;
+} phelps_buff;
+
+
+	/*    This is the input screen definition     */
+	/*    Note that all fields add up to less than 80 characters in
+	      length and the row coordinates are not yet assigned   */
+
+#define PHELPSLINELEN 8
+struct scr_params phelps_line[] = {
+   0,0,"",GREEN,UNFMT_STRING,phelps_buff.job_no,YELLOW,6,NULL,NULL,
+   0,6,"�%-3hu",GREEN,NUMERIC|TYPE_OVER,&phelps_buff.activ_no,YELLOW,3,NULL,NULL,
+   0,10,"�",GREEN,UNFMT_STRING,phelps_buff.descript,YELLOW,29,NULL,NULL,
+   0,40,"�%-3i",GREEN,NUMERIC|TYPE_OVER,&phelps_buff.hours,YELLOW,3,NULL,NULL,
+   0,44,"�",GREEN,UNFMT_STRING,phelps_buff.work_ctr,YELLOW,6,NULL,NULL,
+   0,51,"�",GREEN,BTRV_DATE,&phelps_buff.required,YELLOW,8,NULL,NULL,
+   0,60,"�",GREEN,UNFMT_STRING|CAPITALIZE,phelps_buff.material,YELLOW,8,NULL,NULL,
+   0,69,"�",GREEN,BTRV_DATE,&phelps_buff.complete,YELLOW,8,NULL,NULL
+};
+
+	/* This is the memory allocation routine   */
+
+static void *lmalloc(size_t amnt)
+{
+   struct line_rec *temp_ptr = NULL;
+   if ((temp_ptr = malloc(amnt + 8)) != NULL) {
+      memset (temp_ptr->storage,0,amnt);
+      temp_ptr->next = NULL;
+      temp_ptr->last = NULL;
+   }
+   return (temp_ptr);
+}
+
+int phelpsed(edtstr,row,col,lnth,attr,pos,control)
+char *edtstr;
+int col,row,lnth,attr,*pos;
+unsigned int *control;
+{
+   int i,edited = FALSE,ret;
+   static struct phelpsed_type comp_buff2;     /* Comparison Buffer  */
+
+	/*   Copy the line to be edited into the local edit buffer  */
+
+    memcpy (&phelps_buff,edtstr,sizeof(phelps_buff));
+
+	/*   This section of code handles the control constants that
+   	     TEXACO passes to display the edit line, allocate memory for
+	     new lines and check if a line has been edited.   */
+
+   if (*control & INIT_ONLY) {
+      for (i = 0; i < PHELPSLINELEN;i++) phelps_line[i].row = row;
+      init_screen(phelps_line,PHELPSLINELEN);
+      return;
+   } else if (*control & ALLOCATE) {
+      (*(char **)edtstr) = lmalloc(sizeof(phelps_buff));
+      return;
+   } else if (*control & COMP_LOAD) {
+      memcpy(&comp_buff2,&phelps_buff,sizeof(phelps_buff));
+      return;
+   } else if (*control & COMP_CHECK){
+       return ( memcmp (&comp_buff2,&phelps_buff,sizeof(phelps_buff)) != 0);
+   }
+
+		/*  This line sets the row coordinates in the entry screen
+	definition to the line number passed by TEXACO  */
+
+   for (i = 0; i < PHELPSLINELEN;i++) phelps_line[i].row = row;
+
+	/*   Display and Edit using the entry screen definition  */
+
+   init_screen(phelps_line,PHELPSLINELEN);
+   ret = enter_screen(phelps_line,PHELPSLINELEN,&edited,breakout);
+
+	/*   Copy the Local edit buffer back th the edit line */
+
+   memcpy (edtstr,&phelps_buff,sizeof(phelps_buff));
+
+   return (ret); /* Return The exiting keystroke  */
+}
+.bp
+.te 1 .ce Date Handling Routines
+.te 2 CHECK_DATE Check for valid date
+
+	This function checks a date and ensures that the days field does 
+	not exceed the number days in the month. It returns TRUE if 
+	valid or if null date, FALSE if invalid.
+
+	ret = check_date (date);
+
+	int ret			TRUE valid or null date, FALSE invalid.
+
+	date_only *date		Pointer to date to be checked.
+
+
+.te 2 TODAYS_DATE Get system date
+
+	This function gets the system date and returns it in a date_only 
+	structure as defined in EXTOOLS.H.
+
+	retdate = todays_date(date);
+
+	date_only *retdate	Pointer to returned date.
+
+	date_only *date 	Pointer to date_only structure to hold 
+				returned date.
+
+
+.te 2 GTOJ Convert Gregorian Date to Julian Date
+
+	This function calculates the julian date from a gregorian date 
+	in a date_only structure as defined in EXTOOLS.H.
+
+	julian = gtoj(gregdate);
+
+	long julian		Returned Julian Date.
+
+	date_only *gregdate	Pointer to date_only structure 
+				containing the gregorian date.
+
+.te 2 JTOG Convert Julian Gate to Gregorian Date
+
+	This function converts a julian date to a gregorian date and 
+	returns it in a date_only structure as defined in EXTOOLS.H.
+
+	jtog(julian,gregdate);
+
+	long julian		Julian Date  to convert
+
+	date_only *gregdate	Pointer to return date_only structure
+
+.te 2 WEEKDAY Returns Day of Week 
+
+	This function returns the day of week for any julian date.
+
+	daystr = weekday(julian);
+
+	char *daystr		Returned day of week (Mon,Tue,Wed.....)
+
+	long julian		Julian Date to convert
+
+
+.te 2 MNTHYEAR Returns Month of year
+
+	This function returns the month of year for a gregorian date in 
+	a date_only structure as defined in EXTOOLS.H.
+
+	mnthstr = mnthyear(gregdate);
+
+	char *mnthstr		Returned month of year (jan,feb.....)
+
+	date_only *gregdate 	Pointer to gregorian date to convert
+
+
+.te 2 TODAY_COMP Compares a Date to the System Date
+
+	This function compares a date in date_only structure to the 
+	current system date. It returns the number of days between the 
+	two. The return is greater than 0 if the date to be checked is 
+	BEFORE the system date and less than 0 if its AFTER the system 
+	date.
+
+	numdays = today_comp(gregdate);
+
+	long numdays		Returned number of days
+
+	date_only *gregdate	Pointer to gregorian date to compare
+
+
+.te 2 ASC_DATE Converts a Gregorian Date to a String
+
+	This function returns a string in the form XX/XX/19XX from a 
+	gregorian date in a date_only structure as defined in EXTOOLS.H.
+
+	char *asc_date(buffer,gregdate);
+
+	char *buffer		String to print (at least 11 in size)
+
+	date_only *gregdate	Pointer to gregorian date to convert
+
+	returns a pointer to the buffer.
+
+
+.te 2 ASC_BTR_DATE Converts a Btrieve Date to a String
+
+	This function returns a string in the form XX/XX/19XX from a 
+	gregorian date in a btr_date structure as defined in 
+	EXTOOLS.H.
+
+	char *asc_date(buffer,gregdate);
+
+	char *buffer		String to print (at least 11 in size)
+
+	btr_date *gregdate	Pointer to gregorian date to convert
+
+	returns a pointer to the buffer.
+
+
+.te 2 ASC_BTR_DATETIME Converts a Btrieve Date/Time to a String
+
+	This function returns a string in the form XX/XX/19XX XX:XX from 
+	a gregorian date in a btr_datetime structure as defined in 
+	EXTOOLS.H.
+
+	char *asc_btr_datetime(buffer,gregdate_time);
+
+	char *buffer		String to print (at least 17 in size)
+
+	btr_datetime *gregdate	Pointer to gregorian date/time to 
+	 			convert
+
+	returns a pointer to the buffer.
+
+
+.te 2 BDTTODT Converts Btrieve date/time to Date/Time
+
+	This function converts a btr_datetime structure to a date_time 
+	structure as defined in EXTOOLS.H. It returns a pointer to the 
+	converted structure.
+
+	struct date_time *bdttodt(outdate,indate);
+
+	struct date_time *outdate	Pointer to return buffer
+
+	struct btr_datetime *indate 	Pointer to structure to convert
+
+
+.te 2 DTTOBDT Converts  Date/Time to Btrieve date/time
+
+	This function converts a date_time structure to a btr_datetime 
+	structure as defined in EXTOOLS.H. It returns a pointer to the 
+	converted structure.
+
+	struct btr_datetime *bdttodt(outdate,indate);
+
+	struct btr_datetime *outdate	Pointer to return buffer
+
+	struct date_time *indate 	Pointer to structure to convert
+
+
+.te 2 BDTODO Converts Btrieve date to Date Only
+
+	This function converts a btr_date structure to a date_only 
+	structure as defined in EXTOOLS.H. It returns a pointer to the 
+	converted structure.
+
+	struct date_only *bdtodo(outdate,indate);
+
+	struct date_only *outdate	Pointer to return buffer
+
+	struct btr_date *indate 	Pointer to structure to convert
+
+
+.te 2 DOTOBD Converts Date Only  to Btrieve Date
+
+	This function converts a date_only structure to a btr_date 
+	structure as defined in EXTOOLS.H. It returns a pointer to the 
+	converted structure.
+
+	struct btr_date *dotobd(outdate,indate);
+
+	struct btr_date *outdate	Pointer to return buffer
+
+	struct date_only *indate 	Pointer to structure to convert
+
+
+.pb
+.te 1 .ce MISC MACROS
+
+
+.te 2 CLEARKBD Clear the keyboard buffer  (EXTOOLS.H)
+
+        This macro clears the keyboard buffer
+
+        CLEARKBD
+
