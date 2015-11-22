@@ -792,12 +792,12 @@ Default Scan         Monochrome                     Color
                 4  . . . . . . . .             . . . . . . . .
                 5  . . . . . . . .             . . . . . . . .
                 6  . . . . . . . .             . . . . . . . .
-                7  . . . . . . . .    Start    ²²²²²²²²²²²²²²²
-                8  . . . . . . . .    End      ²²²²²²²²²²²²²²²
+                7  . . . . . . . .    Start    ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                8  . . . . . . . .    End      ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 9  . . . . . . . .
                10  . . . . . . . .
-Start          11  ²²²²²²²²²²²²²²²
-End            12  ²²²²²²²²²²²²²²²
+Start          11  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+End            12  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 
         exsetcur(wstart,wend);
@@ -933,13 +933,13 @@ struct phelpsed_type {
 #define PHELPSLINELEN 8
 struct scr_params phelps_line[] = {
    0,0,"",GREEN,UNFMT_STRING,phelps_buff.job_no,YELLOW,6,NULL,NULL,
-   0,6,"³%-3hu",GREEN,NUMERIC|TYPE_OVER,&phelps_buff.activ_no,YELLOW,3,NULL,NULL,
-   0,10,"³",GREEN,UNFMT_STRING,phelps_buff.descript,YELLOW,29,NULL,NULL,
-   0,40,"³%-3i",GREEN,NUMERIC|TYPE_OVER,&phelps_buff.hours,YELLOW,3,NULL,NULL,
-   0,44,"³",GREEN,UNFMT_STRING,phelps_buff.work_ctr,YELLOW,6,NULL,NULL,
-   0,51,"³",GREEN,BTRV_DATE,&phelps_buff.required,YELLOW,8,NULL,NULL,
-   0,60,"³",GREEN,UNFMT_STRING|CAPITALIZE,phelps_buff.material,YELLOW,8,NULL,NULL,
-   0,69,"³",GREEN,BTRV_DATE,&phelps_buff.complete,YELLOW,8,NULL,NULL
+   0,6,"ï¿½%-3hu",GREEN,NUMERIC|TYPE_OVER,&phelps_buff.activ_no,YELLOW,3,NULL,NULL,
+   0,10,"ï¿½",GREEN,UNFMT_STRING,phelps_buff.descript,YELLOW,29,NULL,NULL,
+   0,40,"ï¿½%-3i",GREEN,NUMERIC|TYPE_OVER,&phelps_buff.hours,YELLOW,3,NULL,NULL,
+   0,44,"ï¿½",GREEN,UNFMT_STRING,phelps_buff.work_ctr,YELLOW,6,NULL,NULL,
+   0,51,"ï¿½",GREEN,BTRV_DATE,&phelps_buff.required,YELLOW,8,NULL,NULL,
+   0,60,"ï¿½",GREEN,UNFMT_STRING|CAPITALIZE,phelps_buff.material,YELLOW,8,NULL,NULL,
+   0,69,"ï¿½",GREEN,BTRV_DATE,&phelps_buff.complete,YELLOW,8,NULL,NULL
 };
 
 	/* This is the memory allocation routine   */
@@ -1034,7 +1034,7 @@ unsigned int *control;
 	This function calculates the julian date from a gregorian date 
 	in a date_only structure as defined in EXTOOLS.H.
 
-	julian = gtoj(gregdate);
+	julian = gtoj(gregdate); 
 
 	long julian		Returned Julian Date.
 
