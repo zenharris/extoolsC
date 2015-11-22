@@ -1,0 +1,81 @@
+#!/bin/bash
+#     #!/usr/bin/tcsh
+
+# file: dos2unix1
+#
+# Synopsis:  THIS IS A VARIANT OF dos2unix
+#	where you want to replace a dos file by a unix file!
+#   	So, you give it only ONE file argument:
+#
+#		> dos2unix1 filename
+#
+#	As a result, filename is converted from a dos file
+#	into a unix file.
+#
+#############################################################
+# How do you convert a dos file to unix?
+#############################################################
+# Well, gvim sometimes could do it, but it is sometimes too clever
+#	and it hides the extra dos characters from view!  Then you cannot
+#	delete these characters. [I am not sure how to turn off this
+#	cleverness of gvim]
+#
+# But do you really care if they don't show up on gvim?
+#	Here is one case where it matters: I have two files, foo and bar,
+#	that I need to diff.  If one is in unix and other in dos format,
+#	then diff does not produce anything sensible!
+#
+# A web search gave a number of solutions (e.g., use ftp, etc).
+# 	Here is one I like, based on the program "tr" which translates
+# 	or deletes characters from standard input to standard output!
+#	This is available on cygwin!
+#
+# SYNOPSIS of tr:
+#
+#       tr [OPTION]... SET1 [SET2]
+#
+#       -c, --complement
+#              first complement SET1
+#
+#       -d, --delete
+#              delete characters in SET1, do not translate
+#
+#       -s, --squeeze-repeats
+#              replace sequence of characters with one
+#
+#       -t, --truncate-set1
+#              first truncate SET1 to length of SET2
+#
+#       --help display this help and exit
+#
+#       SETs are specified as strings  of  characters.   Most  represent  them-
+#       selves.  Interpreted sequences are:
+#
+#       \NNN   character with octal value NNN (1 to 3 octal digits)
+#
+#       \\     backslash
+#
+#       \a     audible BEL
+#
+#       \b     backspace
+#
+#       \f     form feed
+#
+#   ...etc
+#############################################################
+# The upshot:
+# 	The following line can be used to remove all carriage returns 
+# 	and Ctrl-z (^Z) characters from a DOS file by typing:
+#
+#                > tr -d '\15\32' < dosfile.txt > unixfile.txt
+# Here is the automation via shell script:
+#
+
+tr -d '\15\32' < $1 > $1.yaptemp
+mv $1.yaptemp $1
+
+#############################################################
+# The downside:
+# 	tr cannot be used to convert a document from 
+#	Unix format to DOS. 
+#############################################################
